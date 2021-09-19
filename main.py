@@ -1,5 +1,6 @@
 # https://www.notion.so/Big-Fred-56e28b634ebe40bebf062ea3cba837b6
 # https://discordpy.readthedocs.io/en/latest/api.html#
+# https://discordpy.readthedocs.io/en/latest/ext/commands
 
 # We only need to be lucky once.
 # You need to be lucky every time.
@@ -10,7 +11,7 @@ from discord.ext import commands
 import os
 
 if __name__ == "__main__":
-    bot: commands.Bot = commands.Bot(command_prefix=".", intents=discord.Intents.all(), case_insensitive=True)
+    bot: commands.Bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insensitive=True)
 
     try:
         with open(".token") as f:
