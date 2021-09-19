@@ -39,15 +39,14 @@ class Quotes(commands.Cog):
             embed.set_author(name=name, icon_url=icon)
         else:
             embed.set_author(name=name)
-        embed.description = text
+        embed.description = f"**`{text}'**"
         embed.set_footer(text=date)
 
-        settings_manager: SettingsManager = self.bot.cogs.get("SettingsManager")
-        settings: SettingsManager.settings = settings_manager.get(ctx.guild.id)
-        guild: discord.Guild = ctx.guild
+        settings: SettingsManager.settings = self.bot.get_cog("SettingsManager").get(ctx.guild.id)
+        channel: discord.TextChannel = ctx.guild.get_channel(int(settings.channel_quotes.value[2:-1]))
 
-        channel: discord.TextChannel = guild.get_channel(int(settings.channel_quotes.value[2:-1]))
         await channel.send(embed=embed)
+        await ctx.message.reply(f"Quote sent to {channel.mention}")
 
 
 def setup(bot: commands.Bot):
