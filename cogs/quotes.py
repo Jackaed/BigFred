@@ -39,7 +39,7 @@ class Quotes(commands.Cog):
             embed.set_author(name=name, icon_url=icon)
         else:
             embed.set_author(name=name)
-        embed.description = f"**`{text}'**"
+        embed.description = f"**'{text}'**"
         embed.set_footer(text=date)
 
         settings: SettingsManager.settings = self.bot.get_cog("SettingsManager").get(ctx.guild.id)

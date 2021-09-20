@@ -2,8 +2,8 @@
 # https://discordpy.readthedocs.io/en/latest/api.html#
 # https://discordpy.readthedocs.io/en/latest/ext/commands
 
-# We only need to be lucky once.
-# You need to be lucky every time.
+# We only have to be lucky once.
+# You will have to be lucky always.
 
 import discord
 from discord.ext import commands
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     for cog in os.listdir("cogs"):
         if cog.split(".", 2)[-1] == "py" and cog[0] != "_":
-            bot.load_extension("cogs." + cog.strip(".py"))
+            bot.load_extension("cogs." + cog[:-3])
             print(f"> Loaded {cog}")
 
     print("Cogs Loaded\n")
