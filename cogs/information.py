@@ -14,7 +14,7 @@ class Information(commands.Cog):
     def info_embed(self, on: str, title: str = "", colour: discord.Colour = discord.Colour.green(), author: discord.User = None):
         embed = discord.Embed(title=title,
                               colour=colour,
-                              description=f"Information on `{on}` at {self.fred_functions.date(datetime.now())}")
+                              description=f"Information on `{on}` at `{self.fred_functions.date(datetime.now())}`")
 
         if author:
             embed.set_author(name=author.display_name, icon_url=author.avatar_url)
@@ -50,6 +50,20 @@ class Information(commands.Cog):
         embed.set_author(name=str(member), icon_url=member.avatar_url)
         embed.add_field(name=f"Information ({member.guild.name})", value=guild_info, inline=True)
         embed.add_field(name=f"Information ({member.display_name})", value=user_info, inline=True)
+
+        await ctx.reply(embed=embed)
+
+    @commands.command(aliases=["av"])
+    async def avatar(self, ctx: commands.context.Context, user=None):
+        if user is None:
+            member = ctx.author
+        else:
+            member = ctx.message.mentions[0]
+
+        embed = self.info_embed(f"{member.display_name}'s Avatar")
+
+        embed.set_author(name=str(member))
+        embed.set_image(url=member.avatar_url)
 
         await ctx.reply(embed=embed)
 
