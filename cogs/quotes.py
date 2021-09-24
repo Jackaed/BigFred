@@ -10,63 +10,72 @@ class Quotes(commands.Cog):
         self.bot: commands.Bot = bot
         self.fred_functions: FredFunctions = bot.get_cog("FredFunctions")
 
+    # noinspection PyUnboundLocalVariable
     @commands.command(aliases=["q"])
     async def quote(self, ctx: commands.Context, *args):
 
         image = None
-        message_has_text = len(args) >= 2
-        message_has_image = bool(ctx.message.attachments)
+        text = None
+        icon = None
 
-        if (message_has_image and len(args) == 1) or message_has_text:
+        valid = False
 
-            if message_has_image:
-                image = ctx.message.attachments[0].url
+        if len(args) >= 1:
 
             date = self.fred_functions.date()
+
+            if hasattr(ctx.message, "attatchments"):
+                image = ctx.message.attachments[0].url
+                valid = True
+
+            if len(args) >= 2:
+                text = " ".join(args[1:])
+                valid = True
 
             if len(ctx.message.mentions) > 0:
                 user: discord.User = ctx.message.mentions[0]
                 name = user.display_name
                 icon = user.avatar_url
-
             else:
                 name = args[0]
-                icon = None
 
-            if message_has_text:
-                text = " ".join(args[1:])
-            else:
-                text = ""
-
+        # Reply
         elif len(args) == 0 and ctx.message.reference:
+            valid = True
             message: discord.Message = await ctx.fetch_message(ctx.message.reference.message_id)
+
             name = message.author.display_name
             icon = message.author.avatar_url
             text = message.content
+
             if message.attachments:
                 image = message.attachments[0].url
+
             date = self.fred_functions.date(message.created_at)
-        else:
+
+        if not valid:
             await self.fred_functions.command_error(ctx, ["@user|name", "message"],
                                                     f"You can also reply to a message with `{self.bot.command_prefix}q` to quote it.")
             return
 
         embed = discord.Embed(colour=discord.Colour.blue())
+        embed.set_author(name=name)
         if icon:
             embed.set_author(name=name, icon_url=icon)
-        else:
-            embed.set_author(name=name)
+
         if text:
             embed.description = f"**'{text}'**"
+
         if image:
             embed.set_image(url=image)
+
         embed.set_footer(text=date)
 
         settings: SettingsManager.settings = self.bot.get_cog("SettingsManager").get(ctx.guild.id)
         channel: discord.TextChannel = ctx.guild.get_channel(int(settings.channel_quotes.value[2:-1]))
 
         await channel.send(embed=embed)
-        await ctx.message.reply(f"Quote sent to {channel.mention}")
+        await ctx.message.reply(f"{channel.mention}")
 
 
 def setup(bot: commands.Bot):
