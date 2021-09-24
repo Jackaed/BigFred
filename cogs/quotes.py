@@ -14,8 +14,9 @@ class Quotes(commands.Cog):
     async def quote(self, ctx: commands.Context, *args):
 
         image = None
-
-        if ctx.message.attachments or len(args) >= 1:
+        message_has_text = len(args) >= 2
+        
+        if (ctx.message.attachments and len(args) == 1) or message_has_text:
 
             image = ctx.message.attachments[0].url
             date = self.fred_functions.date()
@@ -29,7 +30,7 @@ class Quotes(commands.Cog):
                 name = args[0]
                 icon = None
 
-            if len(args) >= 2:
+            if message_has_text:
                 text = " ".join(args[1:])
             else:
                 text = ""
