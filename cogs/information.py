@@ -22,7 +22,7 @@ class Information(commands.Cog):
         return embed
 
     @commands.command(aliases=["u"])
-    async def user(self, ctx: commands.context.Context, user=None):
+    async def user(self, ctx: commands.Context, user=None):
         if user is None:
             member = ctx.author
         else:
@@ -54,7 +54,7 @@ class Information(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["av"])
-    async def avatar(self, ctx: commands.context.Context, user=None):
+    async def avatar(self, ctx: commands.Context, user=None):
         if user is None:
             member = ctx.author
         else:
@@ -68,7 +68,7 @@ class Information(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.command(aliases=["role"])
-    async def roles(self, ctx: commands.context.Context, user=None):
+    async def roles(self, ctx: commands.Context, user=None):
         member = None
         roles = []
 
@@ -110,7 +110,7 @@ class Information(commands.Cog):
             await ctx.reply(embed=embed)
 
     @commands.command(aliases=["chan"])
-    async def channel(self, ctx: commands.context.Context):
+    async def channel(self, ctx: commands.Context):
         if len(ctx.message.channel_mentions) > 0:
             channels = ctx.message.channel_mentions
         else:
@@ -138,7 +138,7 @@ class Information(commands.Cog):
             await ctx.reply(embed=embed)
 
     @commands.command(aliases=["guild"])
-    async def server(self, ctx: commands.context.Context):
+    async def server(self, ctx: commands.Context):
         guild: discord.Guild = ctx.guild
 
         embed = self.info_embed(on=guild.name, title=guild.name)
