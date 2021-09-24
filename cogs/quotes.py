@@ -20,6 +20,7 @@ class Quotes(commands.Cog):
 
         valid = False
 
+        # !q <member> <text>
         if len(args) >= 1:
 
             date = self.fred_functions.date()
@@ -39,7 +40,7 @@ class Quotes(commands.Cog):
             else:
                 name = args[0]
 
-        # Reply
+        # !q <@message>
         elif len(args) == 0 and ctx.message.reference:
             valid = True
             message: discord.Message = await ctx.fetch_message(ctx.message.reference.message_id)
