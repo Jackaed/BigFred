@@ -12,17 +12,29 @@ class Quotes(commands.Cog):
 
     @commands.command(aliases=["q"])
     async def quote(self, ctx: commands.Context, *args):
-        if len(args) >= 2:
+
+        if ctx.message.attachments:
+            image = ctx.message.attachments[0].url
+        else:
+            image = None
+
+        if (len(args) == 1 and image) or len(args) >= 2:
+
+            date = self.fred_functions.date()
             if len(ctx.message.mentions) > 0:
                 user: discord.User = ctx.message.mentions[0]
                 name = user.display_name
                 icon = user.avatar_url
+
             else:
                 name = args[0]
                 icon = None
 
-            text = " ".join(args[1:])
-            date = self.fred_functions.date()
+            # This is disgusting, but it's also not my problem, so fuck you kit
+            if len(args) == 1:
+                text = ""
+            else:
+                text = " ".join(args)
 
         elif len(args) == 0 and ctx.message.reference:
             message: discord.Message = await ctx.fetch_message(ctx.message.reference.message_id)
@@ -39,7 +51,10 @@ class Quotes(commands.Cog):
             embed.set_author(name=name, icon_url=icon)
         else:
             embed.set_author(name=name)
-        embed.description = f"**'{text}'**"
+        if text:
+            embed.description = f"**'{text}'**"
+        if image:
+            embed.set_image(url=image)
         embed.set_footer(text=date)
 
         settings: SettingsManager.settings = self.bot.get_cog("SettingsManager").get(ctx.guild.id)
