@@ -20,7 +20,6 @@ class Messages:
         discord.Activity(type=discord.ActivityType.watching, name="My Empire Grow"),
 
         discord.Activity(type=discord.ActivityType.playing, name="Dwarf Fortress"),
-        discord.Activity(type=discord.ActivityType.playing, name="League of Legends"),
         discord.Activity(type=discord.ActivityType.playing, name="Minecraft"),
         discord.Activity(type=discord.ActivityType.playing, name="Factorio"),
         discord.Activity(type=discord.ActivityType.playing, name="Fortnite"),

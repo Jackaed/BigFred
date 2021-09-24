@@ -13,14 +13,17 @@ class Quotes(commands.Cog):
     @commands.command(aliases=["q"])
     async def quote(self, ctx: commands.Context, *args):
 
-        if ctx.message.attachments:
-            image = ctx.message.attachments[0].url
-        else:
-            image = None
+        image = None
+        message_has_text = len(args) >= 2
+        message_has_image = bool(ctx.message.attachments)
 
-        if (len(args) == 1 and image) or len(args) >= 2:
+        if (message_has_image and len(args) == 1) or message_has_text:
+
+            if message_has_image:
+                image = ctx.message.attachments[0].url
 
             date = self.fred_functions.date()
+
             if len(ctx.message.mentions) > 0:
                 user: discord.User = ctx.message.mentions[0]
                 name = user.display_name
@@ -30,20 +33,22 @@ class Quotes(commands.Cog):
                 name = args[0]
                 icon = None
 
-            # This is disgusting, but it's also not my problem, so fuck you kit
-            if len(args) == 1:
-                text = ""
+            if message_has_text:
+                text = " ".join(args[1:])
             else:
-                text = " ".join(args)
+                text = ""
 
         elif len(args) == 0 and ctx.message.reference:
             message: discord.Message = await ctx.fetch_message(ctx.message.reference.message_id)
             name = message.author.display_name
             icon = message.author.avatar_url
             text = message.content
+            if message.attachments:
+                image = message.attachments[0].url
             date = self.fred_functions.date(message.created_at)
         else:
-            await self.fred_functions.command_error(ctx, ["@user|name", "message"], f"You can also reply to a message with `{self.bot.command_prefix}q` to quote it.")
+            await self.fred_functions.command_error(ctx, ["@user|name", "message"],
+                                                    f"You can also reply to a message with `{self.bot.command_prefix}q` to quote it.")
             return
 
         embed = discord.Embed(colour=discord.Colour.blue())
