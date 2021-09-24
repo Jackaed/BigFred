@@ -24,7 +24,7 @@ class Quotes(commands.Cog):
 
             date = self.fred_functions.date()
 
-            if hasattr(ctx.message, "attatchments"):
+            if FredFunctions.contains_image(ctx.message):
                 image = ctx.message.attachments[0].url
                 valid = True
 
