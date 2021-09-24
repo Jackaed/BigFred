@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from cogs.fred_functions import FredFunctions
-from constants import Messages
+import messages
 
 import random
 
@@ -23,24 +23,24 @@ class Personality(commands.Cog):
             await response.delete(delay=5)
 
         if self.bot.user.mentioned_in(message):
-            await message.channel.send(random.choice(Messages.PING))
+            await message.channel.send(random.choice(messages.PING))
 
-        if random.random() * 100 < Messages.CHANCE_EMOJI:
-            await message.add_reaction(random.choice(Messages.EMOJI))
+        if random.random() * 100 < messages.CHANCE_EMOJI:
+            await message.add_reaction(random.choice(messages.EMOJI))
 
-        if random.random() * 100 < Messages.CHANCE_GUILD_EMOJI:
+        if random.random() * 100 < messages.CHANCE_GUILD_EMOJI:
             await message.add_reaction(random.choice(message.guild.emojis))
 
-        if random.random() * 100 < Messages.CHANCE_MESSAGE:
-            await message.channel.send(random.choice(Messages.RANDOM))
+        if random.random() * 100 < messages.CHANCE_MESSAGE:
+            await message.channel.send(random.choice(messages.RANDOM))
 
-        if random.random() * 100 < Messages.CHANCE_DM:
+        if random.random() * 100 < messages.CHANCE_DM:
             member: discord.Member = message.author
 
-            await member.send(random.choice(Messages.CHANCE_DM))
+            await member.send(random.choice(messages.DM))
 
-        if random.random() * 100 < Messages.CHANCE_STATUS_CHANGE:
-            await self.bot.change_presence(activity=random.choice(Messages.STATUSES))
+        if random.random() * 100 < messages.CHANCE_STATUS_CHANGE:
+            await self.bot.change_presence(activity=random.choice(messages.STATUSES))
 
 
 def setup(bot: commands.Bot):

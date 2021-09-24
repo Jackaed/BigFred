@@ -168,9 +168,3 @@ class Messages:
         """,
         "you looked real cute sleeping last night"
     ]
-
-
-class Roles:
-    MAIN = ["Upper Class", "Middle Class"]
-    MUTED = "Immigrant"
-    DEFAULT = "Middle Class"
