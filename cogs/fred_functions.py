@@ -31,6 +31,23 @@ class FredFunctions(commands.Cog):
 
         return time.strftime("%d %B %Y, %H:%M")
 
+    @staticmethod
+    def contains_image(message: discord.Message):
+
+        image_file_formats = ["png", "jpeg", "jpg"]
+
+        if not message.attachments:
+            return False
+
+        message = message.attachments[0].url
+
+        for file_format in image_file_formats:
+
+            if message[-len(file_format):].lower() == file_format:
+                return True
+
+        return False
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(FredFunctions(bot))
