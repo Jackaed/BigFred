@@ -39,11 +39,10 @@ class FredFunctions(commands.Cog):
         if not message.attachments:
             return False
 
-        message = message.attachments[0].url
+        file = message.attachments[0].url
 
         for file_format in image_file_formats:
-
-            if message[-len(file_format):].lower() == file_format:
+            if file[-len(file_format):].lower() == file_format:
                 return True
 
         return False
