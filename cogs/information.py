@@ -28,7 +28,7 @@ class Information(commands.Cog):
         else:
             member = ctx.message.mentions[0]
 
-        user_info = f"**Created:** {self.fred_functions.date(member.created_at)}\n"
+        user_info = f"**Created:** `{self.fred_functions.date(member.created_at)}`\n"
         user_info += f"**Age:** `{str(datetime.now() - member.created_at).split('.')[0]}`\n"
         user_info += f"**ID:** `{member.id}`\n"
         user_info += f"**Status:** `{'Do Not Disturb' if str(member.status) == 'dnd' else str(member.status).title()}`\n"
@@ -41,8 +41,8 @@ class Information(commands.Cog):
         roles = member.roles
         roles.reverse()
         guild_info = f"**Roles ({len(roles) - 1}):** {' '.join([s.mention for s in roles if not s.is_default()])}\n"
-        guild_info += f"**Nickname:** {member.nick}\n"
-        guild_info += f"**Joined:** {self.fred_functions.date(member.joined_at)}\n"
+        guild_info += f"**Nickname:** `{member.nick}`\n"
+        guild_info += f"**Joined:** `{self.fred_functions.date(member.joined_at)}`\n"
         guild_info += f"**In server:** `{str(datetime.now() - member.joined_at).split('.')[0]}`"
 
         embed = self.info_embed(member.display_name)
