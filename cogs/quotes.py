@@ -15,10 +15,13 @@ class Quotes(commands.Cog):
 
         image = None
         message_has_text = len(args) >= 2
-        
-        if (ctx.message.attachments and len(args) == 1) or message_has_text:
+        message_has_image = bool(ctx.message.attachments)
 
-            image = ctx.message.attachments[0].url
+        if (message_has_image and len(args) == 1) or message_has_text:
+
+            if message_has_image:
+                image = ctx.message.attachments[0].url
+
             date = self.fred_functions.date()
 
             if len(ctx.message.mentions) > 0:
@@ -40,9 +43,12 @@ class Quotes(commands.Cog):
             name = message.author.display_name
             icon = message.author.avatar_url
             text = message.content
+            if message.attachments:
+                image = message.attachments[0].url
             date = self.fred_functions.date(message.created_at)
         else:
-            await self.fred_functions.command_error(ctx, ["@user|name", "message"], f"You can also reply to a message with `{self.bot.command_prefix}q` to quote it.")
+            await self.fred_functions.command_error(ctx, ["@user|name", "message"],
+                                                    f"You can also reply to a message with `{self.bot.command_prefix}q` to quote it.")
             return
 
         embed = discord.Embed(colour=discord.Colour.blue())
