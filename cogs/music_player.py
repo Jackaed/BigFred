@@ -23,6 +23,7 @@ class MusicPlayer(commands.Cog):
 
         if len(args) == 0:
 
+
             if self.voice_client and self.voice_client.is_paused():
 
                     self.voice_client.resume()
@@ -34,6 +35,8 @@ class MusicPlayer(commands.Cog):
 
             search = VideosSearch(" ".join(args), limit=1)
             video_url = search.result()['result'][0]['link']
+            await self.fred_functions.command_error(ctx, ["YouTube link"])
+            return
 
         if ctx.message.author.voice is None:
             await self.fred_functions.custom_error(ctx, "User not in VC",
@@ -56,6 +59,20 @@ class MusicPlayer(commands.Cog):
             await asyncio.sleep(1)
 
         await self.voice_client.disconnect()
+        video_url = args[0] if args[0][0:4] == "http" else f"https://www.youtube.com/watch?v={args[0]}"
+
+        filename = f"mp3s/{ctx.guild.id}.mp3"
+
+        os.makedirs("mp3s", exist_ok=True)
+        if os.path.exists(filename):
+            os.remove(filename)
+
+        voice_client.play(self.get_audio(video_url, filename))
+
+        while voice_client.is_playing():
+            await asyncio.sleep(1)
+
+        await voice_client.disconnect()
 
     @staticmethod
     def get_audio(url: str, filename: str) -> discord.FFmpegOpusAudio:
