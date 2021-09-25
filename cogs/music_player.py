@@ -16,7 +16,7 @@ class MusicPlayer(commands.Cog):
     async def play(self, ctx: commands.Context, *args):
 
         if len(args) == 0:
-            await self.fred_functions.command_error(ctx, ["@user|name", "message"])
+            await self.fred_functions.command_error(ctx, ["YouTube link"])
             return
 
         if ctx.message.author.voice is None:
@@ -27,34 +27,43 @@ class MusicPlayer(commands.Cog):
         voice_channel = user.voice.channel
         voice_client = await voice_channel.connect()
 
-        video_url = args[0]
+        video_url = args[0] if args[0][0:4] == "http" else f"https://www.youtube.com/watch?v={args[0]}"
+
+        filename = f"mp3s/{ctx.guild.id}.mp3"
+
+        os.makedirs("mp3s", exist_ok=True)
+        if os.path.exists(filename):
+            os.remove(filename)
+
+        voice_client.play(self.get_audio(video_url, filename))
+
+        while voice_client.is_playing():
+            await asyncio.sleep(1)
+
+        await voice_client.disconnect()
+
+    @staticmethod
+    def get_audio(url: str, filename: str) -> discord.FFmpegOpusAudio:
         video_info = youtube_dl.YoutubeDL().extract_info(
-            url=video_url, download=False
+            url=url, download=False
         )
-        filename = "tmp.wav"
+
         options = {
             'format': 'bestaudio/best',
             'keepvideo': False,
             'outtmpl': filename,
             'postprocessors': [{
-                'key': 'FFmpegExtractAudio',                'preferredcodec': 'mp3',
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
                 'preferredquality': '192'}]
         }
 
         with youtube_dl.YoutubeDL(options) as ydl:
             ydl.download([video_info['webpage_url']])
 
-        audio = discord.FFmpegOpusAudio("tmp.mp3", bitrate=256)
-        voice_client.play(audio)
-
-        while voice_client.is_playing():
-            await asyncio.sleep(1)
-
-        os.remove("tmp.mp3")
-        await voice_client.disconnect()
-
+        return discord.FFmpegOpusAudio(filename, bitrate=256)
 
 
 def setup(bot: commands.Bot):
     bot.add_cog(MusicPlayer(bot))
-   
+
