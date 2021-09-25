@@ -32,6 +32,6 @@ if __name__ == "__main__":
 
     @bot.event
     async def on_ready():
-        print(f"{bot.user.display_name} is online with ({round(bot.latency * 100, 2)}ms latency)")
+        print(f"{bot.user.display_name} is online with a {round(bot.latency * 100, 2)}ms ping\n")
 
     bot.run(token)

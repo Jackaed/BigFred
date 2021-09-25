@@ -12,22 +12,32 @@ class MusicPlayer(commands.Cog):
         self.bot: commands.Bot = bot
         self.fred_functions: FredFunctions = bot.get_cog("FredFunctions")
 
-    @commands.command(aliases=["p"])
-    async def play(self, ctx: commands.Context, *args):
+        self.clients: {int: discord.VoiceClient} = {}
 
-        if len(args) == 0:
-            await self.fred_functions.command_error(ctx, ["YouTube link"])
-            return
+    @commands.command(aliases=["p", "resume", "r"])
+    async def play(self, ctx: commands.Context, *args):
 
         if ctx.message.author.voice is None:
             await self.fred_functions.custom_error(ctx, "User not in VC", "You need to be in a voice channel to use this command.")
             return
 
+        if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_paused():
+            self.clients[ctx.guild.id].resume()
+            await ctx.reply("Resumed")
+            return
+
+        query = " ".join(args) if args else "James May says Cheese"
+
         user = ctx.message.author
         voice_channel = user.voice.channel
-        voice_client = await voice_channel.connect()
 
-        video_url = args[0] if args[0][0:4] == "http" else f"https://www.youtube.com/watch?v={args[0]}"
+        try:
+            voice_client = await voice_channel.connect()
+        except discord.ClientException:
+            # TODO: This will not work across guilds
+            voice_client = self.bot.voice_clients[0]
+
+        self.clients[ctx.guild.id] = voice_client
 
         filename = f"mp3s/{ctx.guild.id}.mp3"
 
@@ -35,23 +45,33 @@ class MusicPlayer(commands.Cog):
         if os.path.exists(filename):
             os.remove(filename)
 
-        voice_client.play(self.get_audio(video_url, filename))
+        await ctx.reply("on it")
+        voice_client.play(await self.get_audio(query, filename, ctx))
+        await ctx.reply("downloaded")
 
-        while voice_client.is_playing():
+        while voice_client.is_playing() or voice_client.is_paused():
             await asyncio.sleep(1)
 
         await voice_client.disconnect()
 
-    @staticmethod
-    def get_audio(url: str, filename: str) -> discord.FFmpegOpusAudio:
-        video_info = youtube_dl.YoutubeDL().extract_info(
-            url=url, download=False
-        )
+    @commands.command(aliases=["pa"])
+    async def pause(self, ctx: commands.Context):
+        await ctx.reply("Paused")
+        self.clients[ctx.guild.id].pause()
 
+    @commands.command()
+    async def stop(self, ctx: commands.Context):
+        await ctx.reply("Stopped")
+        self.clients[ctx.guild.id].stop()
+
+    @staticmethod
+    async def get_audio(query: str, filename: str, ctx: commands.Context) -> discord.FFmpegOpusAudio:
         options = {
             'format': 'bestaudio/best',
             'keepvideo': False,
             'outtmpl': filename,
+            'noplaylist': True,
+            'default_search': "ytsearch",
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -59,7 +79,8 @@ class MusicPlayer(commands.Cog):
         }
 
         with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download([video_info['webpage_url']])
+            async with ctx.typing():
+                ydl.download([query])
 
         return discord.FFmpegOpusAudio(filename, bitrate=256)
 
