@@ -110,7 +110,6 @@ RANDOM = [
     "this tune is fire bro, i love dubstep"
 ]
 
-
 DM = [
     "send feet pics :wink:",
     "your dms have in fact been slid into by a bot",
@@ -152,4 +151,13 @@ DM = [
         :boot:     :eyeglasses:       :boot:
     """,
     "you looked real cute sleeping last night"
+]
+
+SONGS = [
+    "James may says cheese",
+    "nigel farage you have missed pog day",
+    "If I'm not a bush, I'm not no one",
+    "I don't care that you broke your elbow",
+    "So no one told you life was gonna be this way (RTGame)",
+    "The american people are tired of women Bernie Sanders"
 ]

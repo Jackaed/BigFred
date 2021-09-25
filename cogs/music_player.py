@@ -1,8 +1,12 @@
 import asyncio
+import random
+
 import discord
 import os
 from discord.ext import commands
 import youtube_dl
+
+import messages
 from cogs.fred_functions import FredFunctions
 
 
@@ -26,18 +30,16 @@ class MusicPlayer(commands.Cog):
             await ctx.reply("Resumed")
             return
 
-        query = " ".join(args) if args else "James May says Cheese"
+        query = " ".join(args) if args else random.choice(messages.SONGS)
 
         user = ctx.message.author
         voice_channel = user.voice.channel
 
-        try:
-            voice_client = await voice_channel.connect()
-        except discord.ClientException:
-            # TODO: This will not work across guilds
-            voice_client = self.bot.voice_clients[0]
-
-        self.clients[ctx.guild.id] = voice_client
+        if ctx.guild.id in self.clients:
+            voice_client = self.clients[ctx.guild.id]
+        else:
+            voice_client: discord.VoiceClient = await voice_channel.connect()
+            self.clients[ctx.guild.id] = voice_client
 
         filename = f"mp3s/{ctx.guild.id}.mp3"
 
@@ -47,11 +49,12 @@ class MusicPlayer(commands.Cog):
 
         await ctx.reply("on it")
         voice_client.play(await self.get_audio(query, filename, ctx))
-        await ctx.reply("downloaded")
+        await ctx.reply(f"downloaded '{query}'")
 
         while voice_client.is_playing() or voice_client.is_paused():
             await asyncio.sleep(1)
 
+        self.clients.pop(ctx.guild.id)
         await voice_client.disconnect()
 
     @commands.command(aliases=["pa"])
@@ -80,7 +83,10 @@ class MusicPlayer(commands.Cog):
 
         with youtube_dl.YoutubeDL(options) as ydl:
             async with ctx.typing():
-                ydl.download([query])
+                try:
+                    ydl.download([query])
+                except youtube_dl.DownloadError:
+                    ydl.download(random.choice(messages.SONGS))
 
         return discord.FFmpegOpusAudio(filename, bitrate=256)
 
