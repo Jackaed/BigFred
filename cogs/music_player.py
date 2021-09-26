@@ -45,23 +45,33 @@ class MusicPlayer(commands.Cog):
 
         os.makedirs("mp3s", exist_ok=True)
         if os.path.exists(filename):
-            os.remove(filename)
+            try:
+                os.remove(filename)
+            except PermissionError:
+                await ctx.reply(embed=discord.Embed(title="Music Player", description="A song is already playing.", colour=discord.Colour.purple()))
+                return
 
         msg: discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player", description="Downloading song...", colour=discord.Colour.purple()))
         audio, info = self.get_audio(query, filename)
+
         voice_client.play(audio)
 
-        info = info["entries"][0]
+        try:
+            entries = info["entries"][0]
+        except KeyError:
+            entries = {}
+
+            print(info)
 
         embed = discord.Embed(title="Music Player",
-                              description=f"Now Playing: `{info.get('track', info['title'])}`",
+                              description=f"Now Playing: `{entries.get('track', entries['title'])}`",
                               colour=discord.Colour.purple())
-        embed.set_image(url=info['thumbnail'])
+        embed.set_image(url=entries.get('thumbnail', 'https://cdn.discordapp.com/icons/728673767559135323/cc76b1f50106f69ceb94d530bc8d3a75.webp?size=1024'))
         embed.set_footer(text=f"https://www.youtube.com/watch?v={info['id']}")
 
-        info_field = f"Album: `{info.get('album', 'none')}`\n" \
-                     f"Artist: `{info.get('artist', 'none')}`\n" \
-                     f"Duration: `{info.get('duration', -1)} seconds`"
+        info_field = f"Album: `{entries.get('album', '-')}`\n" \
+                     f"Artist: `{entries.get('artist', '-')}`\n" \
+                     f"Duration: `{entries.get('duration', '-')} seconds`"
 
         embed.add_field(name="Info", value=info_field)
 
@@ -70,7 +80,8 @@ class MusicPlayer(commands.Cog):
         while voice_client.is_playing() or voice_client.is_paused():
             await asyncio.sleep(1)
 
-        self.clients.pop(ctx.guild.id)
+        if ctx.guild.id in self.clients:
+            self.clients.pop(ctx.guild.id)
         await voice_client.disconnect()
 
     @commands.command(aliases=["pa"])
