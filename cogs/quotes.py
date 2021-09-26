@@ -65,7 +65,7 @@ class Quotes(commands.Cog):
             embed.set_author(name=name, icon_url=icon)
 
         if text:
-            embed.description = f"**'{text}'**"
+            embed.description = f"'{text}'"
 
         if image:
             embed.set_image(url=image)

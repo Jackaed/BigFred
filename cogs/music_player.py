@@ -48,18 +48,22 @@ class MusicPlayer(commands.Cog):
             os.remove(filename)
 
         msg: discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player", description="Downloading song...", colour=discord.Colour.purple()))
-        audio, info = await self.get_audio(query, filename, ctx)
+        audio, info = self.get_audio(query, filename)
         voice_client.play(audio)
 
-        name = info["entries"][0]["title"]
-        v = info["entries"][0]["id"]
-        thumbnail = info["entries"][0]["thumbnail"]
+        info = info["entries"][0]
 
         embed = discord.Embed(title="Music Player",
-                              description=f"Now Playing: `{name}`",
+                              description=f"Now Playing: `{info.get('track', info['title'])}`",
                               colour=discord.Colour.purple())
-        embed.set_image(url=thumbnail)
-        embed.set_footer(text=f"https://www.youtube.com/watch?v={v}")
+        embed.set_image(url=info['thumbnail'])
+        embed.set_footer(text=f"https://www.youtube.com/watch?v={info['id']}")
+
+        info_field = f"Album: `{info.get('album', 'none')}`\n" \
+                     f"Artist: `{info.get('artist', 'none')}`\n" \
+                     f"Duration: `{info.get('duration', -1)} seconds`"
+
+        embed.add_field(name="Info", value=info_field)
 
         await msg.edit(embed=embed)
 
@@ -80,7 +84,7 @@ class MusicPlayer(commands.Cog):
         self.clients[ctx.guild.id].stop()
 
     @staticmethod
-    async def get_audio(query: str, filename: str, ctx: commands.Context) -> (discord.FFmpegOpusAudio, {}):
+    def get_audio(query: str, filename: str) -> (discord.FFmpegOpusAudio, {}):
         options = {
             'format': 'bestaudio/best',
             'keepvideo': False,
@@ -94,13 +98,12 @@ class MusicPlayer(commands.Cog):
         }
 
         with youtube_dl.YoutubeDL(options) as ydl:
-            async with ctx.typing():
-                info = ydl.extract_info(query, download=False)
+            info = ydl.extract_info(query, download=False)
 
-                try:
-                    ydl.download([query])
-                except youtube_dl.DownloadError:
-                    ydl.download(random.choice(messages.SONGS))
+            try:
+                ydl.download([query])
+            except youtube_dl.DownloadError:
+                ydl.download(random.choice(messages.SONGS))
 
         return discord.FFmpegOpusAudio(filename, bitrate=64), info
 

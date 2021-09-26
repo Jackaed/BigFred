@@ -28,22 +28,22 @@ class Information(commands.Cog):
         else:
             member = ctx.message.mentions[0]
 
-        user_info = f"**Created:** `{self.fred_functions.date(member.created_at)}`\n"
-        user_info += f"**Age:** `{str(datetime.now() - member.created_at).split('.')[0]}`\n"
-        user_info += f"**ID:** `{member.id}`\n"
-        user_info += f"**Status:** `{'Do Not Disturb' if str(member.status) == 'dnd' else str(member.status).title()}`\n"
+        user_info = f"Created: `{self.fred_functions.date(member.created_at)}`\n"
+        user_info += f"Age: `{str(datetime.now() - member.created_at).split('.')[0]}`\n"
+        user_info += f"ID: `{member.id}`\n"
+        user_info += f"Status: `{'Do Not Disturb' if str(member.status) == 'dnd' else str(member.status).title()}`\n"
         if member.activity:
-            user_info += f"**Activity:** `{member.activity.name}`\n"
+            user_info += f"Activity: `{member.activity.name}`\n"
         else:
-            user_info += f"**Activity:** `None`\n"
-        user_info += f"**Pending:** `{'Yes' if member.pending else 'No'}`\n"
+            user_info += f"Activity: `None`\n"
+        user_info += f"Pending: `{'Yes' if member.pending else 'No'}`\n"
 
         roles = member.roles
         roles.reverse()
-        guild_info = f"**Roles ({len(roles) - 1}):** {' '.join([s.mention for s in roles if not s.is_default()])}\n"
-        guild_info += f"**Nickname:** `{member.nick}`\n"
-        guild_info += f"**Joined:** `{self.fred_functions.date(member.joined_at)}`\n"
-        guild_info += f"**In server:** `{str(datetime.now() - member.joined_at).split('.')[0]}`"
+        guild_info = f"Roles ({len(roles) - 1}): {' '.join([s.mention for s in roles if not s.is_default()])}\n"
+        guild_info += f"Nickname: `{member.nick}`\n"
+        guild_info += f"Joined: `{self.fred_functions.date(member.joined_at)}`\n"
+        guild_info += f"In server: `{str(datetime.now() - member.joined_at).split('.')[0]}`"
 
         embed = self.info_embed(member.display_name)
 
@@ -100,11 +100,11 @@ class Information(commands.Cog):
             embed.add_field(name=f"Members ({len(shown_members)}/{len(role.members)}):",
                             value=' '.join([m.mention for m in shown_members]))
 
-            info = f"**Colour:** `{str(role.colour).upper()}`\n"
-            info += f"**Created:** `{self.fred_functions.date(role.created_at)}`\n"
-            info += f"**Age:** `{datetime.now() - role.created_at}`\n"
-            info += f"**Displayed Separately:** `{'Yes' if role.hoist else 'No'}`\n"
-            info += f"**ID:** `{role.id}`"
+            info = f"Colour: `{str(role.colour).upper()}`\n"
+            info += f"Created: `{self.fred_functions.date(role.created_at)}`\n"
+            info += f"Age: `{datetime.now() - role.created_at}`\n"
+            info += f"Displayed Separately: `{'Yes' if role.hoist else 'No'}`\n"
+            info += f"ID: `{role.id}`"
             embed.add_field(name="Information", value=info)
 
             await ctx.reply(embed=embed)
@@ -124,14 +124,14 @@ class Information(commands.Cog):
             members = [m.mention for m in channel.members if not m.bot]
             bots = [m.mention for m in channel.members if m.bot]
 
-            info = f"**Created:** `{self.fred_functions.date(channel.created_at)}`\n"
-            info += f"**Age:** `{datetime.now() - channel.created_at}`\n"
-            info += f"**Members ({len(members)}):** {(' '.join(members[:30]))} {f'+{len(members) - 30} more' if len(members) > 30 else ''}\n"
-            info += f"**Bots ({len(bots)}):** {' '.join(bots)}\n"
-            info += f"**ID:** `{channel.id}`\n"
-            info += f"**Topic:** `{channel.topic}`\n"
-            info += f"**NSFW:** `{'yes' if channel.nsfw else 'no'}`\n"
-            info += f"**Category:** `{channel.category}`"
+            info = f"Created: `{self.fred_functions.date(channel.created_at)}`\n"
+            info += f"Age: `{datetime.now() - channel.created_at}`\n"
+            info += f"Members ({len(members)}): {(' '.join(members[:30]))} {f'+{len(members) - 30} more' if len(members) > 30 else ''}\n"
+            info += f"Bots ({len(bots)}): {' '.join(bots)}\n"
+            info += f"ID: `{channel.id}`\n"
+            info += f"Topic: `{channel.topic}`\n"
+            info += f"NSFW: `{'yes' if channel.nsfw else 'no'}`\n"
+            info += f"Category: `{channel.category}`"
 
             embed.add_field(name="Information", value=info)
 
@@ -148,11 +148,11 @@ class Information(commands.Cog):
         members = [m.mention for m in guild.members if not m.bot]
         bots = [m.mention for m in guild.members if m.bot]
 
-        info = f"**Created:** `{self.fred_functions.date(guild.created_at)}`\n"
-        info += f"**Age:** `{datetime.now() - guild.created_at}`\n"
-        info += f"**Members ({len(members)}):** {(' '.join(members[:30]))} {f'+{len(members) - 30} more' if len(members) > 30 else ''}\n"
-        info += f"**Bots ({len(bots)}):** {' '.join(bots)}\n"
-        info += f"**ID:** `{guild.id}`"
+        info = f"Created: `{self.fred_functions.date(guild.created_at)}`\n"
+        info += f"Age: `{datetime.now() - guild.created_at}`\n"
+        info += f"Members ({len(members)}): {(' '.join(members[:30]))} {f'+{len(members) - 30} more' if len(members) > 30 else ''}\n"
+        info += f"Bots ({len(bots)}): {' '.join(bots)}\n"
+        info += f"ID: `{guild.id}`"
 
         embed.add_field(name="Information", value=info)
 
