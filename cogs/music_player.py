@@ -47,9 +47,21 @@ class MusicPlayer(commands.Cog):
         if os.path.exists(filename):
             os.remove(filename)
 
-        await ctx.reply("on it")
-        voice_client.play(await self.get_audio(query, filename, ctx))
-        await ctx.reply(f"downloaded '{query}'")
+        msg: discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player", description="Downloading song...", colour=discord.Colour.purple()))
+        audio, info = await self.get_audio(query, filename, ctx)
+        voice_client.play(audio)
+
+        name = info["entries"][0]["title"]
+        v = info["entries"][0]["id"]
+        thumbnail = info["entries"][0]["thumbnail"]
+
+        embed = discord.Embed(title="Music Player",
+                              description=f"Now Playing: `{name}`",
+                              colour=discord.Colour.purple())
+        embed.set_image(url=thumbnail)
+        embed.set_footer(text=f"https://www.youtube.com/watch?v={v}")
+
+        await msg.edit(embed=embed)
 
         while voice_client.is_playing() or voice_client.is_paused():
             await asyncio.sleep(1)
@@ -68,7 +80,7 @@ class MusicPlayer(commands.Cog):
         self.clients[ctx.guild.id].stop()
 
     @staticmethod
-    async def get_audio(query: str, filename: str, ctx: commands.Context) -> discord.FFmpegOpusAudio:
+    async def get_audio(query: str, filename: str, ctx: commands.Context) -> (discord.FFmpegOpusAudio, {}):
         options = {
             'format': 'bestaudio/best',
             'keepvideo': False,
@@ -83,12 +95,14 @@ class MusicPlayer(commands.Cog):
 
         with youtube_dl.YoutubeDL(options) as ydl:
             async with ctx.typing():
+                info = ydl.extract_info(query, download=False)
+
                 try:
                     ydl.download([query])
                 except youtube_dl.DownloadError:
                     ydl.download(random.choice(messages.SONGS))
 
-        return discord.FFmpegOpusAudio(filename, bitrate=256)
+        return discord.FFmpegOpusAudio(filename, bitrate=64), info
 
 
 def setup(bot: commands.Bot):

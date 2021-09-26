@@ -159,5 +159,6 @@ SONGS = [
     "If I'm not a bush, I'm not no one",
     "I don't care that you broke your elbow",
     "So no one told you life was gonna be this way (RTGame)",
-    "The american people are tired of women Bernie Sanders"
+    "The american people are tired of women Bernie Sanders",
+    "archangel - burial"
 ]
