@@ -12,7 +12,13 @@ import messages
 from cogs.fred_functions import FredFunctions
 
 client_id =  "ab145034fa4e431ea3a94666038f3f1e"
-client_secret = "97a896b65a3444e88a9e713cdee7248b"
+
+try:
+    with open(".client_secret") as f:
+        client_secret = f.read()
+except FileNotFoundError:
+    raise FileNotFoundError("Could not find .client_secret file")
+
 client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
