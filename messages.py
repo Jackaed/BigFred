@@ -161,4 +161,7 @@ SONGS = [
     "So no one told you life was gonna be this way (RTGame)",
     "The american people are tired of women Bernie Sanders",
     "archangel - burial"
+    "Nigel Farage says Order! - Cameo"
+    "Dennis Skinner kicked out of Commons for calling David Cameron \"dodgy Dave\" - BBC News"
+    "Zucc Smokin Meats - SONGIFY THIS"
 ]
