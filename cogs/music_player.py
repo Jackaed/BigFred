@@ -1,5 +1,6 @@
 import asyncio
 import random
+import time
 
 import discord
 import os
@@ -11,16 +12,18 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import messages
 from cogs.fred_functions import FredFunctions
 
-client_id =  "ab145034fa4e431ea3a94666038f3f1e"
-
 try:
     with open(".client_secret") as f:
-        client_secret = f.read()
+        file = f.readlines()
+    client_secret = file[0].rstrip("\n")
+    client_id = file[1].rstrip("\n")
+
 except FileNotFoundError:
     raise FileNotFoundError("Could not find .client_secret file")
 
 client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
 spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
 
 class MusicPlayer(commands.Cog):
 
@@ -29,25 +32,41 @@ class MusicPlayer(commands.Cog):
         self.fred_functions: FredFunctions = bot.get_cog("FredFunctions")
 
         self.clients: {int: discord.VoiceClient} = {}
+        self.song: {dict} = {}
+        self.time: {dict} = {}
 
     @commands.command(aliases=["np", "current", "playing"])
-    async def song(self, ctx: commands.Context, *args):
+    async def song(self, ctx: commands.Context):
+
         if ctx.message.author.voice is None:
             await self.fred_functions.custom_error(ctx, "User not in VC",
                                                    "You need to be in a voice channel to use this command.")
             return
 
+        if ctx.guild.id not in self.clients:
+            await self.fred_functions.custom_error(ctx, "Fred not playing",
+                                                   "Fred is currently not playing any music.")
+            return
+
         try:
-            id = str(ctx.guild.id)
-            with open("Songs/info." + id) as f:
-                info = f.readlines()
+            if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_paused():
+                progress = int(time.time() - (
+                            self.time[ctx.guild.id]["start"] + (time.time() - self.time[ctx.guild.id]["paused"])))
+            else:
+                progress = int(time.time() - self.time[ctx.guild.id]["start"])
 
-            embed = discord.Embed(title="Current Song", description=info[0].rstrip("\n"),
+            song = self.song[ctx.guild.id]
+            duration = int(str(list(song["info_field"].split("\n"))[2]).strip("Duration: `seconds`"))
+
+            embed = discord.Embed(title="Current Song",
+                                  description=song["description"],
                                   colour=discord.Colour.purple())
-            embed.set_image(url=info[1].rstrip("\n"))
-            embed.set_footer(text=info[2].rstrip("\n"))
+            embed.set_image(url=song["url"])
+            embed.set_footer(text=song["text"])
 
-            info_field = info[3].rstrip("\n") + "\n" + info[4].rstrip("\n") + "\n" + info[5].rstrip("\n")
+            info_field = song["info_field"] + \
+                         "\n" + f"Progress: `{progress} seconds`" + \
+                         "\n" + f"Persentage complete: `{int(progress / duration * 100)} %`"
 
             embed.add_field(name="Info", value=info_field)
 
@@ -67,6 +86,8 @@ class MusicPlayer(commands.Cog):
 
         if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_paused():
             self.clients[ctx.guild.id].resume()
+            self.time[ctx.guild.id]["start"] = self.time[ctx.guild.id]["start"] + (
+                        time.time() - self.time[ctx.guild.id]["paused"])
             await ctx.reply("Resumed")
             return
 
@@ -75,11 +96,7 @@ class MusicPlayer(commands.Cog):
         if "https://open.spotify.com/track/" in query:
             query.strip("https://open.spotify.com/track/")
             spotify_info = spotify.track(query)
-            for i in spotify_info["artists"]:
-                print(i)
             query = f'{spotify_info["name"]} by {spotify_info["album"]["artists"][0]["name"]}'
-            print(query)
-
 
         user = ctx.message.author
         voice_channel = user.voice.channel
@@ -118,27 +135,26 @@ class MusicPlayer(commands.Cog):
 
         await msg.edit(embed=embed)
 
-        os.makedirs("Songs", exist_ok=True)
-        id = str(ctx.guild.id)
-        f = open("Songs/info." + id, "w")
-        f.write(f"Now Playing: `{info.get('track', info['title'])}`" + "\n" +
-                info['thumbnail'] + "\n" +
-                f"https://www.youtube.com/watch?v={info['id']}" + "\n" +
-                f"Album: `{info.get('album', 'none')}`\n" \
-                f"Artist: `{info.get('artist', 'none')}`\n" \
-                f"Duration: `{info.get('duration', -1)} seconds`")
-        f.close()
+        self.song[ctx.guild.id] = {"description": f"Now Playing: `{info.get('track', info['title'])}`",
+                                   "url": info['thumbnail'],
+                                   "text": f"https://www.youtube.com/watch?v={info['id']}",
+                                   "info_field": info_field}
+
+        self.time[ctx.guild.id] = {"start": time.time(), "paused": 0.0}
 
         while voice_client.is_playing() or voice_client.is_paused():
             await asyncio.sleep(1)
 
         self.clients.pop(ctx.guild.id)
+        self.time.pop(ctx.guild.id)
+        self.song.pop(ctx.guild.id)
         await voice_client.disconnect()
 
     @commands.command(aliases=["pa"])
     async def pause(self, ctx: commands.Context):
         await ctx.reply("Paused")
         self.clients[ctx.guild.id].pause()
+        self.time[ctx.guild.id]["paused"] = time.time()
 
     @commands.command()
     async def stop(self, ctx: commands.Context):
