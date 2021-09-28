@@ -49,33 +49,28 @@ class MusicPlayer(commands.Cog):
                                                    "Fred is currently not playing any music.")
             return
 
-        try:
-            if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_paused():
-                progress = int(time.time() - (
-                        self.time[ctx.guild.id]["start"] + (time.time() - self.time[ctx.guild.id]["paused"])))
-            else:
-                progress = int(time.time() - self.time[ctx.guild.id]["start"])
+        if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_paused():
+            progress = int(time.time() - (
+                    self.time[ctx.guild.id]["start"] + (time.time() - self.time[ctx.guild.id]["paused"])))
+        else:
+            progress = int(time.time() - self.time[ctx.guild.id]["start"])
 
-            song = self.song[ctx.guild.id]
-            duration = int(str(list(song["info_field"].split("\n"))[2]).strip("Duration: `seconds`"))
+        song = self.song[ctx.guild.id]
+        duration = int(str(list(song["info_field"].split("\n"))[2]).strip("Duration: `seconds`"))
 
-            embed = discord.Embed(title="Current Song",
-                                  description=song["description"],
-                                  colour=discord.Colour.purple())
-            embed.set_image(url=song["url"])
-            embed.set_footer(text=song["text"])
+        embed = discord.Embed(title="Current Song",
+                              description=song["description"],
+                              colour=discord.Colour.purple())
+        embed.set_image(url=song["url"])
+        embed.set_footer(text=song["text"])
 
-            info_field = song["info_field"] + "\n" \
-                                              f"Progress: `{progress} seconds`\n" \
-                                              f"Persentage complete: `{int(progress / duration * 100)} %`"
+        info_field = song["info_field"] + "\n" \
+                                          f"Progress: `{progress} seconds`\n" \
+                                          f"Persentage complete: `{int(progress / duration * 100)} %`"
 
-            embed.add_field(name="Info", value=info_field)
+        embed.add_field(name="Info", value=info_field)
 
-            discord.Message = await ctx.reply(embed=embed)
-        except FileNotFoundError:
-            discord.Message = await ctx.reply(
-                embed=discord.Embed(title="No Song playing", description="There is currently no song playing.",
-                                    colour=discord.Colour.purple()))
+        discord.Message = await ctx.reply(embed=embed)
 
     @commands.command(aliases=["next", "qu"])
     async def queue(self, ctx: commands.Context):
