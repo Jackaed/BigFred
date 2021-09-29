@@ -4,7 +4,7 @@ from cogs.fred_functions import FredFunctions
 import time
 import asyncio
 
-class TempVcs(commands.Cog):
+class TempVCs(commands.Cog):
 
     def __init__(self, bot):
         self.bot: commands.Bot = bot
@@ -66,4 +66,4 @@ class TempVcs(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(TempVcs(bot))
+    bot.add_cog(TempVCs(bot))
