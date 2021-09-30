@@ -10,14 +10,12 @@ from discord.ext import commands
 
 import os
 
+import secrets
+
 if __name__ == "__main__":
     bot: commands.Bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), case_insensitive=True)
 
-    try:
-        with open(".token") as f:
-            token = f.read()
-    except FileNotFoundError:
-        raise FileNotFoundError("Could not find .token file")
+    token = secrets.DISCORD_TOKEN
 
     print("Discord API Version {x.major}.{x.minor}".format(x=discord.version_info))
 

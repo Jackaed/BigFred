@@ -1,31 +1,24 @@
-import asyncio
-import random
-import time
-
 import discord
-import os
 from discord.ext import commands
+
 import youtube_dl
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+import asyncio
+import random
+import time
+import os
+
 import messages
+import secrets
 from cogs.fred_functions import FredFunctions
-
-try:
-    with open(".client_secret") as f:
-        file = f.readlines()
-    client_secret = file[0].rstrip("\n")
-    client_id = file[1].rstrip("\n")
-
-except FileNotFoundError:
-    raise FileNotFoundError("Could not find .client_secret file")
-
-client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
 class MusicPlayer(commands.Cog):
+
+    client_credentials_manager = SpotifyClientCredentials(client_id=secrets.SPOTIFY_ID, client_secret=secrets.SPOTIFY_SECRET)
+    spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
     def __init__(self, bot):
         self.bot: commands.Bot = bot
