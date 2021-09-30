@@ -4,6 +4,7 @@ from cogs.fred_functions import FredFunctions
 import time
 import asyncio
 
+
 class TempVCs(commands.Cog):
 
     def __init__(self, bot):
@@ -13,16 +14,14 @@ class TempVCs(commands.Cog):
     @commands.command(aliases=["vc"])
     async def create_vc(self, ctx: commands.Context, *args):
 
-
         if len(args) > 0:
             name = args[0]
         else:
             name = ctx.message.author.display_name + "'s VC"
 
-
         if len(args) > 1:
             if not args[1].isdigit():
-                await FredFunctions.command_error(
+                await self.fred_functions.command_error(ctx,["name?", "size?"])
                 return
 
             else:
@@ -30,12 +29,12 @@ class TempVCs(commands.Cog):
         else:
             size = 99
 
-        if size > 0 or size < 2:
-            await FredFunctions.command_error(ctx, ["name?", "size?"])
+        if size > 99 or size < 2:
+            await self.fred_functions.command_error(ctx, ["name?", "size?"])
             return
         
         category = None
-        for c in guild.categories:
+        for c in ctx.guild.categories:
             if c.name == "Custom VCs":
                 category = c
                 break
@@ -44,11 +43,11 @@ class TempVCs(commands.Cog):
             category = await ctx.guild.create_category(name="Custom VCs", position=2)
 
         i = 0
-        while (name + " " + str(i) if i > 0 else name) in [c.name for c in guild.voice_channels]:
+        while (name + " " + str(i) if i > 0 else name) in [c.name for c in ctx.guild.voice_channels]:
             i += 1
         name = name + " " + str(i) if i > 0 else name
 
-        channel = await guild.create_voice_channel(name=name, category=category, user_limit=size)
+        channel = await ctx.guild.create_voice_channel(name=name, category=category, user_limit=size)
         await ctx.message.reply(f"`{name}` with size `{size}`.")
 
         channel_created = time.time()
