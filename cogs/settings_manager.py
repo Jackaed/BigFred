@@ -48,7 +48,7 @@ class SettingsManager(commands.Cog):
     async def reset_settings(self, ctx: commands.Context):
         self.set(ctx.guild.id, Settings())
 
-    @commands.command(aliases=["s", "setting"])
+    @commands.command(aliases=["setting"])
     async def settings(self, ctx: commands.Context, setting_name: str = None, value_str: str = None):
         guild_id: int = ctx.guild.id
         settings = self.get(guild_id)
