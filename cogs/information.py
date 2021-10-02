@@ -26,7 +26,7 @@ class Information(commands.Cog):
     async def ping(self, ctx: commands.Context):
 
         embed = discord.Embed(title="Pong",
-                              colour= discord.Colour.green(),
+                              colour=discord.Colour.green(),
                               description=f"Ping of: `{round(ctx.bot.latency * 100, 2)}ms`")
 
         await ctx.reply(embed=embed)
@@ -119,7 +119,7 @@ class Information(commands.Cog):
 
             await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["chan"])
+    @commands.command(aliases=["chan", "c"])
     async def channel(self, ctx: commands.Context):
         if len(ctx.message.channel_mentions) > 0:
             channels = ctx.message.channel_mentions
@@ -147,7 +147,7 @@ class Information(commands.Cog):
 
             await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["guild"])
+    @commands.command(aliases=["guild", "s"])
     async def server(self, ctx: commands.Context):
         guild: discord.Guild = ctx.guild
 
