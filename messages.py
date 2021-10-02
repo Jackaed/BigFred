@@ -165,8 +165,6 @@ SONGS = [
     "https://www.youtube.com/watch?v=eEa3vDXatXg",
     "Michael Rosen - Nice",
     "Steven Yeun You Are Gay",
-    "That's a ten",
     "david guetta ends racism",
     "Sometimes My Genius Is Almost Frightening | Top Gear",
-    "nice jacket"
 ]
