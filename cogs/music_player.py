@@ -2,7 +2,6 @@ import asyncio
 from typing import Dict, List
 
 import discord
-from discord import FFmpegOpusAudio
 from discord.ext import commands
 
 import youtube_dl
@@ -134,7 +133,7 @@ class MusicPlayer(commands.Cog):
 
         await msg.edit(embed=song.embed)
 
-        while voice_client.is_playing():
+        while voice_client.is_playing() or self.queue[ctx.guild.id].index(song) != 0:
             await asyncio.sleep(1)
 
         voice_client.play(self.queue[ctx.guild.id][0].audio)
@@ -147,6 +146,8 @@ class MusicPlayer(commands.Cog):
 
             await asyncio.sleep(delay)
 
+        voice_client.stop()
+
         while True:
             try:
                 os.remove(song.file)
@@ -154,7 +155,8 @@ class MusicPlayer(commands.Cog):
             except PermissionError:
                 await asyncio.sleep(1)
 
-        self.queue[ctx.guild.id].remove(song)
+        if song in self.queue[ctx.guild.id]:
+            self.queue[ctx.guild.id].remove(song)
 
         if ctx.guild.id in self.clients and len(self.queue[ctx.guild.id]) == 0:
             voice_client = self.clients[ctx.guild.id]
@@ -182,73 +184,62 @@ class MusicPlayer(commands.Cog):
         self.queue[ctx.guild.id] = []
         self.clients[ctx.guild.id].stop()
 
-    @commands.command()
-    async def insert(self, ctx: commands.Context, *args):
-        if ctx.message.author.voice is None:
-            await self.fred_functions.custom_error(ctx, "User not in VC",
-                                                   "You need to be in a voice channel to use this command.")
-            return
-
-        try:
-            int(args[0])
-        except ValueError:
-            await self.fred_functions.custom_error(ctx, "Cannot add song",
-                                                   "A position in the queue must be supplyed in order to add a song.")
-            return
-
-        pos = int(args[0])
-        qurey = " ".join(args).lstrip(str(pos))
-
-        if not isinstance(qurey, str):
-            await self.fred_functions.custom_error(ctx, "Cannot add song",
-                                                   "A song must be supplyed in order to add a song.")
-            return
-
-        if len(self.queue[ctx.guild.id]) < 1:
-            await self.fred_functions.custom_error(ctx, "Cannot remove song",
-                                                   "There must be songs in the queue for you to remove one.")
-            return
-
-        self.queue[ctx.guild.id].insert(pos, qurey)
-        await ctx.reply(embed=discord.Embed(title="Pop",
-                                            colour=discord.Colour.purple(),
-                                            description=f"addded song {qurey}"))
+    # @commands.command()
+    # async def insert(self, ctx: commands.Context, *args):
+    #     if ctx.message.author.voice is None:
+    #         await self.fred_functions.custom_error(ctx, "User not in VC",
+    #                                                "You need to be in a voice channel to use this command.")
+    #         return
+    #
+    #     try:
+    #         int(args[0])
+    #     except ValueError:
+    #         await self.fred_functions.custom_error(ctx, "Cannot add song",
+    #                                                "A position in the queue must be supplyed in order to add a song.")
+    #         return
+    #
+    #     pos = int(args[0])
+    #     qurey = " ".join(args).lstrip(str(pos))
+    #
+    #     if not isinstance(qurey, str):
+    #         await self.fred_functions.custom_error(ctx, "Cannot add song",
+    #                                                "A song must be supplyed in order to add a song.")
+    #         return
+    #
+    #     if len(self.queue[ctx.guild.id]) < 1:
+    #         await self.fred_functions.custom_error(ctx, "Cannot remove song",
+    #                                                "There must be songs in the queue for you to remove one.")
+    #         return
+    #
+    #     self.queue[ctx.guild.id].insert(pos, qurey)
+    #     await ctx.reply(embed=discord.Embed(title="Pop",
+    #                                         colour=discord.Colour.purple(),
+    #                                         description=f"addded song {qurey}"))
 
     @commands.command()
     async def clear(self, ctx: commands.Context):
-        queue = self.queue[ctx.guild.id]
-
-        for i in range(1, len(queue)):
-            queue.pop(i)
+        self.queue[ctx.guild.id].clear()
 
         await ctx.reply(embed=discord.Embed(title="Clear",
                                             colour=discord.Colour.purple(),
                                             description="Queue cleared"))
 
-    @commands.command()
-    async def pop(self, ctx: commands.Context, *args):
+    @commands.command(aliases=["pop"])
+    async def remove(self, ctx: commands.Context, position: int = -1):
         if ctx.message.author.voice is None:
             await self.fred_functions.custom_error(ctx, "User not in VC",
                                                    "You need to be in a voice channel to use this command.")
             return
 
-        try:
-            int(args[0])
-        except ValueError:
-            await self.fred_functions.custom_error(ctx, "Cannot add song",
-                                                   "A position in the queue must be supplyed in order to remove a song.")
-            return
-
-        pos = int(args[0])
-
-        if len(self.queue[ctx.guild.id]) < 1:
+        if len(self.queue[ctx.guild.id]) == 0:
             await self.fred_functions.custom_error(ctx, "Cannot remove song",
                                                    "There must be songs in the queue for you to remove one.")
             return
-        self.queue[ctx.guild.id].pop(pos)
-        await ctx.reply(embed=discord.Embed(title="Pop",
+
+        self.queue[ctx.guild.id].pop(position)
+        await ctx.reply(embed=discord.Embed(title="Remove",
                                             colour=discord.Colour.purple(),
-                                            description=f"Removed song at position {args[0]}"))
+                                            description=f"Removed song at position {position}"))
 
     @commands.command()
     async def skip(self, ctx: commands.Context):
