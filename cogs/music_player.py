@@ -1,15 +1,14 @@
 import asyncio
-from typing import Dict, List
-
-import discord
-from discord.ext import commands
+from typing import Dict, List, Union
+import random
+import os
 
 import youtube_dl
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
-import random
-import os
+import discord
+from discord.ext import commands
 
 import messages
 import secrets
@@ -18,6 +17,8 @@ from cogs.fred_functions import FredFunctions
 
 class Song:
     def __init__(self):
+        self.status_message: Union[discord.Message, None] = None
+
         self.id: str = ""
         self.title: str = "Not Found"
 
@@ -29,22 +30,31 @@ class Song:
         self.duration: int = 0
         self.progress: int = 0
 
-        self.audio = None
-        self.file = ""
+        self.playing: bool = False
+        self.downloaded: bool = False
+        self.audio: Union[discord.FFmpegOpusAudio, None] = None
+        self.file: str = ""
 
     @property
     def embed(self) -> discord.Embed:
         embed = discord.Embed(colour=discord.Colour.purple())
 
         embed.title = "Music Player"
-        embed.description = f"Now Playing: `{self.title}`\n" \
-                            f"Playing for: `{round(self.progress)} seconds ({round(self.progress / self.duration * 100)}%)`"
+
         embed.add_field(name="Song Info", value=f"Album: `{self.album}`\n"
                                                 f"Track: `{self.track}`\n"
                                                 f"Artist: `{self.artist}`\n"
                                                 f"Duration: `{self.duration} seconds`")
         embed.set_image(url=self.thumbnail_url)
         embed.set_footer(text=f"https://www.youtube.com/watch?v={self.id}")
+
+        if self.playing:
+            embed.description = f"Now Playing: `{self.title}`\n" \
+                                f"Status: `Playing`\n" \
+                                f"Playing for: `{round(self.progress)} seconds ({round(self.progress / self.duration * 100)}%)`"
+        else:
+            embed.description = f"Name: `{self.title}`\n" \
+                                f"Status: `{'Downloaded' if self.downloaded else 'Waiting to download'}`"
 
         return embed
 
@@ -55,6 +65,8 @@ class Song:
         with youtube_dl.YoutubeDL(options) as ydl:
             ydl.download([f"https://www.youtube.com/watch?v={self.id}"])
 
+        self.downloaded = True
+
         self.audio = discord.FFmpegOpusAudio(self.file, bitrate=64)
 
 
@@ -62,19 +74,21 @@ class MusicPlayer(commands.Cog):
     queue: Dict[int, List[Song]]
     clients: Dict[int, discord.VoiceClient]
 
-    client_credentials_manager = SpotifyClientCredentials(client_id=secrets.SPOTIFY_ID, client_secret=secrets.SPOTIFY_SECRET)
+    client_credentials_manager = SpotifyClientCredentials(client_id=secrets.SPOTIFY_ID,
+                                                          client_secret=secrets.SPOTIFY_SECRET)
     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
     options = {
-        "format": "bestaudio/best",
+        "format": "worstaudio",
         "keepvideo": False,
         "outtmpl": "tmp.mp3",
         "noplaylist": True,
         "default_search": "ytsearch",
+        "verbose": False,
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "mp3",
-            "preferredquality": "192"}]
+            "preferredquality": "64"}]
     }
 
     def __init__(self, bot):
@@ -85,7 +99,7 @@ class MusicPlayer(commands.Cog):
         self.queue: {int: [Song]} = {}
 
         self.downloads = 0
-        self.max_downloads = 5
+        self.max_downloads = 2
 
         os.makedirs("mp3s", exist_ok=True)
         for f in os.listdir("mp3s"):
@@ -128,11 +142,6 @@ class MusicPlayer(commands.Cog):
 
         query = " ".join(args) if args else random.choice(messages.SONGS)
 
-        if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_playing():
-            discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player",
-                                                                  description="Song has been added to the queue",
-                                                                  colour=discord.Colour.purple()))
-
         if "https://open.spotify.com/track/" in query:
             query.strip("https://open.spotify.com/track/")
             spotify_info = self.spotify.track(query)
@@ -147,16 +156,13 @@ class MusicPlayer(commands.Cog):
             voice_client: discord.VoiceClient = await voice_channel.connect()
             self.clients[ctx.guild.id] = voice_client
 
-        msg: discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player",
-                                                                   description="Downloading song...",
-                                                                   colour=discord.Colour.purple()))
-
         song = self.get_song(query)
+        song.message = await ctx.reply(embed=song.embed)
         self.queue[ctx.guild.id].append(song)
 
-        await msg.edit(embed=song.embed)
-
         while voice_client.is_playing() or self.queue[ctx.guild.id].index(song) != 0:
+            await song.message.edit(embed=song.embed)
+
             if self.downloads < self.max_downloads:
                 song.download()
                 self.downloads += 1
@@ -167,12 +173,13 @@ class MusicPlayer(commands.Cog):
             song.download()
 
         voice_client.play(self.queue[ctx.guild.id][0].audio)
+        song.playing = True
 
         while voice_client.is_playing() or voice_client.is_paused():
             delay = 1
             if voice_client.is_playing():
                 self.queue[ctx.guild.id][0].progress += delay
-                await msg.edit(embed=song.embed)
+                await song.message.edit(embed=song.embed)
 
             await asyncio.sleep(delay)
 
@@ -214,38 +221,6 @@ class MusicPlayer(commands.Cog):
         await ctx.reply("Stopped")
         self.queue[ctx.guild.id] = []
         self.clients[ctx.guild.id].stop()
-
-    # @commands.command()
-    # async def insert(self, ctx: commands.Context, *args):
-    #     if ctx.message.author.voice is None:
-    #         await self.fred_functions.custom_error(ctx, "User not in VC",
-    #                                                "You need to be in a voice channel to use this command.")
-    #         return
-    #
-    #     try:
-    #         int(args[0])
-    #     except ValueError:
-    #         await self.fred_functions.custom_error(ctx, "Cannot add song",
-    #                                                "A position in the queue must be supplyed in order to add a song.")
-    #         return
-    #
-    #     pos = int(args[0])
-    #     qurey = " ".join(args).lstrip(str(pos))
-    #
-    #     if not isinstance(qurey, str):
-    #         await self.fred_functions.custom_error(ctx, "Cannot add song",
-    #                                                "A song must be supplyed in order to add a song.")
-    #         return
-    #
-    #     if len(self.queue[ctx.guild.id]) < 1:
-    #         await self.fred_functions.custom_error(ctx, "Cannot remove song",
-    #                                                "There must be songs in the queue for you to remove one.")
-    #         return
-    #
-    #     self.queue[ctx.guild.id].insert(pos, qurey)
-    #     await ctx.reply(embed=discord.Embed(title="Pop",
-    #                                         colour=discord.Colour.purple(),
-    #                                         description=f"addded song {qurey}"))
 
     @commands.command()
     async def clear(self, ctx: commands.Context):
