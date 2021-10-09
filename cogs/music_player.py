@@ -48,6 +48,15 @@ class Song:
 
         return embed
 
+    def download(self):
+        options = MusicPlayer.options
+        options["outtmpl"] = self.file
+
+        with youtube_dl.YoutubeDL(options) as ydl:
+            ydl.download([f"https://www.youtube.com/watch?v={self.id}"])
+
+        self.audio = discord.FFmpegOpusAudio(self.file, bitrate=64)
+
 
 class MusicPlayer(commands.Cog):
     queue: Dict[int, List[Song]]
@@ -56,12 +65,27 @@ class MusicPlayer(commands.Cog):
     client_credentials_manager = SpotifyClientCredentials(client_id=secrets.SPOTIFY_ID, client_secret=secrets.SPOTIFY_SECRET)
     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+    options = {
+        "format": "bestaudio/best",
+        "keepvideo": False,
+        "outtmpl": "tmp.mp3",
+        "noplaylist": True,
+        "default_search": "ytsearch",
+        "postprocessors": [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "192"}]
+    }
+
     def __init__(self, bot):
         self.bot: commands.Bot = bot
         self.fred_functions: FredFunctions = bot.get_cog("FredFunctions")
 
         self.clients: {int: discord.VoiceClient} = {}
         self.queue: {int: [Song]} = {}
+
+        self.downloads = 0
+        self.max_downloads = 5
 
         os.makedirs("mp3s", exist_ok=True)
         for f in os.listdir("mp3s"):
@@ -105,9 +129,9 @@ class MusicPlayer(commands.Cog):
         query = " ".join(args) if args else random.choice(messages.SONGS)
 
         if ctx.guild.id in self.clients and self.clients[ctx.guild.id].is_playing():
-            discord.Message = await ctx.reply(
-                embed=discord.Embed(title="Song Added", description="Song has been added to the queue",
-                                    colour=discord.Colour.purple()))
+            discord.Message = await ctx.reply(embed=discord.Embed(title="Music Player",
+                                                                  description="Song has been added to the queue",
+                                                                  colour=discord.Colour.purple()))
 
         if "https://open.spotify.com/track/" in query:
             query.strip("https://open.spotify.com/track/")
@@ -127,14 +151,20 @@ class MusicPlayer(commands.Cog):
                                                                    description="Downloading song...",
                                                                    colour=discord.Colour.purple()))
 
-        audio, song = self.get_audio(query)
-        song.audio = audio
+        song = self.get_song(query)
         self.queue[ctx.guild.id].append(song)
 
         await msg.edit(embed=song.embed)
 
         while voice_client.is_playing() or self.queue[ctx.guild.id].index(song) != 0:
+            if self.downloads < self.max_downloads:
+                song.download()
+                self.downloads += 1
+
             await asyncio.sleep(1)
+
+        if not song.audio:
+            song.download()
 
         voice_client.play(self.queue[ctx.guild.id][0].audio)
 
@@ -151,6 +181,7 @@ class MusicPlayer(commands.Cog):
         while True:
             try:
                 os.remove(song.file)
+                self.downloads -= 1
                 break
             except PermissionError:
                 await asyncio.sleep(1)
@@ -253,33 +284,10 @@ class MusicPlayer(commands.Cog):
         self.clients[ctx.guild.id].stop()
 
     @staticmethod
-    def get_audio(query: str) -> (discord.FFmpegOpusAudio, Song):
-        options = {
-            "format": "bestaudio/best",
-            "keepvideo": False,
-            "outtmpl": "tmp.mp3",
-            "noplaylist": True,
-            "default_search": "ytsearch",
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192"}]
-        }
+    def get_song(query: str) -> Song:
+        with youtube_dl.YoutubeDL(MusicPlayer.options) as ydl:
+            info = ydl.extract_info(query, download=False)
 
-        with youtube_dl.YoutubeDL(options) as ydl:
-            song = MusicPlayer.extract_song(ydl.extract_info(query, download=False))
-            options["outtmpl"] = song.file
-
-        with youtube_dl.YoutubeDL(options) as ydl:
-            try:
-                ydl.download([query])
-            except youtube_dl.DownloadError:
-                ydl.download(random.choice(messages.SONGS))
-
-        return discord.FFmpegOpusAudio(song.file, bitrate=64), song
-
-    @staticmethod
-    def extract_song(info: dict) -> Song:
         song = Song()
 
         if "entries" in info:
