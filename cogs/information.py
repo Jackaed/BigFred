@@ -11,7 +11,8 @@ class Information(commands.Cog):
         self.bot: commands.Bot = bot
         self.fred_functions: FredFunctions = bot.get_cog("FredFunctions")
 
-    def info_embed(self, on: str, title: str = "", colour: discord.Colour = discord.Colour.green(), author: discord.User = None):
+    def info_embed(self, on: str, title: str = "", colour: discord.Colour = discord.Colour.green(),
+                   author: discord.User = None):
         embed = discord.Embed(title=title,
                               colour=colour,
                               description=f"Information on `{on}` at `{self.fred_functions.date(datetime.now())}`")
@@ -20,6 +21,15 @@ class Information(commands.Cog):
             embed.set_author(name=author.display_name, icon_url=author.avatar_url)
 
         return embed
+
+    @commands.command()
+    async def ping(self, ctx: commands.Context):
+
+        embed = discord.Embed(title="Pong",
+                              colour=discord.Colour.green(),
+                              description=f"Ping of: `{round(ctx.bot.latency * 100, 2)}ms`")
+
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=["u"])
     async def user(self, ctx: commands.Context, user=None):
@@ -109,7 +119,7 @@ class Information(commands.Cog):
 
             await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["chan"])
+    @commands.command(aliases=["chan", "c"])
     async def channel(self, ctx: commands.Context):
         if len(ctx.message.channel_mentions) > 0:
             channels = ctx.message.channel_mentions
@@ -137,7 +147,7 @@ class Information(commands.Cog):
 
             await ctx.reply(embed=embed)
 
-    @commands.command(aliases=["guild"])
+    @commands.command(aliases=["guild", "s"])
     async def server(self, ctx: commands.Context):
         guild: discord.Guild = ctx.guild
 

@@ -1,3 +1,4 @@
-/.token
 /settings/
 /.idea/
+/secrets.py
+/mp3s/

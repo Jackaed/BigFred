@@ -160,5 +160,11 @@ SONGS = [
     "I don't care that you broke your elbow",
     "So no one told you life was gonna be this way (RTGame)",
     "The american people are tired of women Bernie Sanders",
-    "archangel - burial"
+    "smokin these meats - mark zucc",
+    "Afraid of Technology",
+    "https://www.youtube.com/watch?v=eEa3vDXatXg",
+    "Michael Rosen - Nice",
+    "Steven Yeun You Are Gay",
+    "david guetta ends racism",
+    "Sometimes My Genius Is Almost Frightening | Top Gear",
 ]
