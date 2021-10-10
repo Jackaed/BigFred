@@ -99,7 +99,8 @@ class MusicPlayer(commands.Cog):
         self.queue: {int: [Song]} = {}
 
         self.downloads = 0
-        self.max_downloads = 2
+        self.max_downloads = 5
+        self.min_downloads = 2
 
         os.makedirs("mp3s", exist_ok=True)
         for f in os.listdir("mp3s"):
@@ -121,7 +122,14 @@ class MusicPlayer(commands.Cog):
                                                    "Fred is currently not playing any music.")
             return
 
-        await ctx.reply("unfortunatley this command was programmed in a horrific manner")
+        embed = discord.Embed(title="Music Player", colour=discord.Colour.purple())
+        embed.description = f"Length: {len(self.queue[ctx.message.guild.id])}\n"
+
+        for i in range(min(len(self.queue[ctx.message.guild.id]), 11)):
+            song = self.queue[ctx.message.guild.id][i]
+            embed.description += f"{i}. {song.title}\n"
+
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=["p", "resume", "r"])
     async def play(self, ctx: commands.Context, *args):
@@ -163,7 +171,7 @@ class MusicPlayer(commands.Cog):
         while voice_client.is_playing() or self.queue[ctx.guild.id].index(song) != 0:
             await song.message.edit(embed=song.embed)
 
-            if self.downloads < self.max_downloads:
+            if self.downloads < self.min_downloads and self.downloads < self.max_downloads:
                 song.download()
                 self.downloads += 1
 
