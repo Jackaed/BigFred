@@ -1,7 +1,10 @@
+import random
 from datetime import datetime
 
 import discord
 from discord.ext import commands
+
+import secrets
 from cogs.fred_functions import FredFunctions
 
 
@@ -47,6 +50,11 @@ class Information(commands.Cog):
         else:
             user_info += f"Activity: `None`\n"
         user_info += f"Pending: `{'Yes' if member.pending else 'No'}`\n"
+        if member == self.bot.user:
+            user_info += f"Hosted By: <@{secrets.HOSTER_ID}>\n"
+            creators = ['<@458664376191287296>', '<@685516928474677259>', '<@690876697842679838>']
+            random.shuffle(creators)
+            user_info += f"Created By: {' '.join(creators)}\n"
 
         roles = member.roles
         roles.reverse()
