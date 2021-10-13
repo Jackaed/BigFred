@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+import messages
 from discord.ext import commands
 import os
 import secrets
@@ -19,6 +21,8 @@ class Jenny (commands.Cog):
                 if cog.split(".", 2)[-1] == "py" and cog[0] != "_" and cog != "jenny.py":
                     ctx.bot.load_extension("cogs." + cog[:-3])
                     print(f"> Reloaded {cog}")
+            importlib.reload(messages)
+
 
 
 def setup(bot: commands.Bot):
