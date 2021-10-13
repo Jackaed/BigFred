@@ -1,12 +1,13 @@
 from discord.ext import commands
 import os
+import secrets
 
 
 class Jenny (commands.Cog):
 
     @commands.command()
     async def update(self, ctx: commands.context):
-        if ctx.guild.id == 891429195811545158:
+        if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID[:-5] == "Aachen":
             os.system("git fetch --all")
             os.system("git reset --hard")
 
