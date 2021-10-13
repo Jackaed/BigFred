@@ -22,7 +22,7 @@ class Jenny (commands.Cog):
                     print(f"> Reloaded {cog}")
             for imp in os.listdir("."):
                 if imp.split(".", 2)[-1] == "py" and imp[0] != "_" and imp != "main.py":
-                    importlib.reload(importlib.import_module(imp))
+                    importlib.reload(importlib.import_module(imp[:-2]))
                     print(f"> Reloaded {imp}")
 
 
