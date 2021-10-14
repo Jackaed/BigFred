@@ -5,25 +5,32 @@ import os
 import secrets
 
 
-class Jenny (commands.Cog):
+class Jenny(commands.Cog):
 
     @commands.command()
     async def update(self, ctx: commands.context):
-        if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID[-4:] == "chen":
+        if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID == ctx.bot.user.id:
+          
             for cog in os.listdir("cogs"):
-                if cog.split(".", 2)[-1] == "py" and cog[0] != "_" and cog != "jenny.py":
+                if can_edit(cog):
                     ctx.bot.unload_extension("cogs." + cog[:-3])
                     print(f"> Unloaded {cog}")
-            wait = await asyncio.create_subprocess_shell("git fetch --all && git reset --hard")
-            await wait.wait()
+                    
+            shell = await asyncio.create_subprocess_shell("git fetch --all && git reset --hard")
+            await shell.wait()
+            
             for cog in os.listdir("cogs"):
-                if cog.split(".", 2)[-1] == "py" and cog[0] != "_" and cog != "jenny.py":
+                if can_edit(cog):
                     ctx.bot.load_extension("cogs." + cog[:-3])
                     print(f"> Reloaded {cog}")
-            for imp in os.listdir("."):
-                if imp.split(".", 2)[-1] == "py" and imp[0] != "_" and imp != "main.py":
-                    importlib.reload(importlib.import_module(imp[:-3]))
-                    print(f"> Reloaded {imp}")
+                    
+            for file in os.listdir("."):
+                if can_edit(file):
+                    importlib.reload(importlib.import_module(file[:-3]))
+                    print(f"> Reloaded {file}")
+                    
+     def can_edit(name: str):
+          return name.split(".", 2)[-1] == "py" and name[0] != "_" and name not in ["main.py", "jenny.py"]
 
 
 def setup(bot: commands.Bot):
