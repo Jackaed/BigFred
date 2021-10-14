@@ -12,7 +12,7 @@ class Jenny(commands.Cog):
         if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID == ctx.bot.user.id:
           
             for cog in os.listdir("cogs"):
-                if can_edit(cog):
+                if self.can_edit(cog):
                     ctx.bot.unload_extension("cogs." + cog[:-3])
                     print(f"> Unloaded {cog}")
                     
@@ -20,17 +20,18 @@ class Jenny(commands.Cog):
             await shell.wait()
             
             for cog in os.listdir("cogs"):
-                if can_edit(cog):
+                if self.can_edit(cog):
                     ctx.bot.load_extension("cogs." + cog[:-3])
                     print(f"> Reloaded {cog}")
                     
             for file in os.listdir("."):
-                if can_edit(file):
+                if self.can_edit(file):
                     importlib.reload(importlib.import_module(file[:-3]))
                     print(f"> Reloaded {file}")
-                    
-     def can_edit(name: str):
-          return name.split(".", 2)[-1] == "py" and name[0] != "_" and name not in ["main.py", "jenny.py"]
+
+    @staticmethod
+    def can_edit(name: str):
+        return name.split(".", 2)[-1] == "py" and name[0] != "_" and name not in ["main.py", "jenny.py"]
 
 
 def setup(bot: commands.Bot):
