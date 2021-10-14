@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 from cogs.fred_functions import FredFunctions
 import time
@@ -21,7 +20,7 @@ class TempVCs(commands.Cog):
 
         if len(args) > 1:
             if not args[1].isdigit():
-                await self.fred_functions.command_error(ctx,["name?", "size?"])
+                await self.fred_functions.command_error(ctx, ["name?", "size?"])
                 return
 
             else:
@@ -61,7 +60,8 @@ class TempVCs(commands.Cog):
 
         if len(category.channels) == 0:
             await category.delete()
-            await ctx.message.reply(f"VC `{name}` was deleted.")
+
+        await ctx.message.reply(f"VC `{name}` was deleted.")
 
 
 def setup(bot: commands.Bot):
