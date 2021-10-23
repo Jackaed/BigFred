@@ -21,10 +21,18 @@ if __name__ == "__main__":
 
     print("\nLoading Cogs...")
 
+    preload = ["fred_functions"]
+    for cog in preload:
+        bot.load_extension(f"cogs.{cog}")
+        print(f"> Loaded {cog}.py")
+
     for cog in os.listdir("cogs"):
         if cog.split(".", 2)[-1] == "py" and cog[0] != "_":
-            bot.load_extension("cogs." + cog[:-3])
-            print(f"> Loaded {cog}")
+            try:
+                bot.load_extension("cogs." + cog[:-3])
+                print(f"> Loaded {cog}")
+            except discord.ext.commands.ExtensionAlreadyLoaded:
+                pass
 
     print("Cogs Loaded\n")
 
