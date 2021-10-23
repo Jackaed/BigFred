@@ -200,6 +200,9 @@ class MusicPlayer(commands.Cog):
                 break
             except PermissionError:
                 await asyncio.sleep(1)
+            except FileNotFoundError:
+                self.downloads -= 1
+                break
 
         if song in self.queue[ctx.guild.id]:
             self.queue[ctx.guild.id].remove(song)
