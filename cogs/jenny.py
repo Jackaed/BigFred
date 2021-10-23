@@ -16,8 +16,8 @@ class Jenny(commands.Cog):
                 if self.can_edit(cog):
                     ctx.bot.unload_extension("cogs." + cog[:-3])
                     print(f"> Unloaded {cog}")
-                    
-            shell = await asyncio.create_subprocess_shell("git fetch --all && git reset --hard")
+
+            shell = await asyncio.create_subprocess_shell("git fetch --all && git reset --hard && pip install -r requirements.txt")
             await shell.wait()
             
             for cog in os.listdir("cogs"):
