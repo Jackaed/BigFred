@@ -21,9 +21,10 @@ class Jenny(commands.Cog):
                 if self.can_edit(cog):
                     ctx.bot.unload_extension("cogs." + cog[:-3])
                     print(f"> Unloaded {cog}")
-
+                    
             print("\nUnloading...")
             shell = await asyncio.create_subprocess_shell("git reset --hard && git pull")
+
             await shell.wait()
 
             print("\nReloading...")
