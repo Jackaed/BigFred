@@ -23,13 +23,8 @@ class Jenny(commands.Cog):
                     print(f"> Unloaded {cog}")
 
             print("\nUnloading...")
-            shell = await asyncio.create_subprocess_shell("git pull")
+            shell = await asyncio.create_subprocess_shell("git reset --hard && git pull")
             await shell.wait()
-            stdout, stderr = await shell.communicate()
-            if stdout:
-                embed.description = stdout.decode()
-            else:
-                print("No stdout")
 
             print("\nReloading...")
             for cog in os.listdir("cogs"):
@@ -42,7 +37,7 @@ class Jenny(commands.Cog):
                     importlib.reload(importlib.import_module(file[:-3]))
                     print(f"> Reloaded {file}")
 
-            print("\n")
+            embed.description = "Updated"
         else:
             if ctx.guild.id != 891429195811545158:
                 embed.description = "You can't do that here"
