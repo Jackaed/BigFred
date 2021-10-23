@@ -1,4 +1,4 @@
-# Fred's mum, now deprecated
+# Fred's mum
 import asyncio
 import importlib
 from discord.ext import commands
@@ -11,15 +11,18 @@ class Jenny(commands.Cog):
     @commands.command()
     async def update(self, ctx: commands.context):
         if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID == ctx.bot.user.id:
-          
+
+            print("\nUnloading...")
             for cog in os.listdir("cogs"):
                 if self.can_edit(cog):
                     ctx.bot.unload_extension("cogs." + cog[:-3])
                     print(f"> Unloaded {cog}")
-                    
-            shell = await asyncio.create_subprocess_shell("git fetch --all && git reset --hard")
+
+            print("\nUnloading...")
+            shell = await asyncio.create_subprocess_shell("git pull")
             await shell.wait()
-            
+
+            print("\nReloading...")
             for cog in os.listdir("cogs"):
                 if self.can_edit(cog):
                     ctx.bot.load_extension("cogs." + cog[:-3])
@@ -30,7 +33,7 @@ class Jenny(commands.Cog):
                     importlib.reload(importlib.import_module(file[:-3]))
                     print(f"> Reloaded {file}")
 
-        await ctx.send("This command is deprecated ;)")
+            print("\n")
 
     @staticmethod
     def can_edit(name: str):
