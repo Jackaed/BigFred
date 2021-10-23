@@ -24,7 +24,12 @@ class Jenny(commands.Cog):
 
             print("\nUnloading...")
             shell = await asyncio.create_subprocess_shell("git pull")
-            embed.description = await shell.wait()
+            await shell.wait()
+            stdout, stderr = await shell.communicate()
+            if stdout:
+                embed.description = stdout.decode()
+            else:
+                print("No stdout")
 
             print("\nReloading...")
             for cog in os.listdir("cogs"):
