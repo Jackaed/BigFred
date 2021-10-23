@@ -1,4 +1,4 @@
-# Fred's mum
+# Fred's mum, now deprecated
 import asyncio
 import importlib
 from discord.ext import commands
@@ -29,6 +29,8 @@ class Jenny(commands.Cog):
                 if self.can_edit(file):
                     importlib.reload(importlib.import_module(file[:-3]))
                     print(f"> Reloaded {file}")
+
+        await ctx.send("This command is deprecated ;)")
 
     @staticmethod
     def can_edit(name: str):
