@@ -1,6 +1,8 @@
 # Fred's mum
 import asyncio
 import importlib
+
+import discord
 from discord.ext import commands
 import os
 import secrets
@@ -10,6 +12,8 @@ class Jenny(commands.Cog):
 
     @commands.command()
     async def update(self, ctx: commands.context):
+        embed = discord.Embed(title="Jenny", colour=discord.Colour.orange())
+
         if ctx.guild.id == 891429195811545158 and secrets.HOSTER_ID == ctx.bot.user.id:
 
             print("\nUnloading...")
@@ -20,7 +24,7 @@ class Jenny(commands.Cog):
 
             print("\nUnloading...")
             shell = await asyncio.create_subprocess_shell("git pull")
-            await shell.wait()
+            embed.description = await shell.wait()
 
             print("\nReloading...")
             for cog in os.listdir("cogs"):
@@ -34,6 +38,13 @@ class Jenny(commands.Cog):
                     print(f"> Reloaded {file}")
 
             print("\n")
+        else:
+            if ctx.guild.id != 891429195811545158:
+                embed.description = "You can't do that here"
+            elif secrets.HOSTER_ID != ctx.bot.user.id:
+                embed.description = "Not updated, not being hosted by Fred"
+
+        await ctx.send(embed=embed)
 
     @staticmethod
     def can_edit(name: str):
