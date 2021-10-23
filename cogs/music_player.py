@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Dict, List, Union
 import random
 import os
@@ -185,11 +186,15 @@ class MusicPlayer(commands.Cog):
 
         while voice_client.is_playing() or voice_client.is_paused():
             delay = 1
-            if voice_client.is_playing():
+
+            if song.playing:
                 self.queue[ctx.guild.id][0].progress += delay
                 await song.message.edit(embed=song.embed)
 
             await asyncio.sleep(delay)
+
+        self.queue[ctx.guild.id][0].progress = self.queue[ctx.guild.id][0].duration
+        await song.message.edit(embed=song.embed)
 
         voice_client.stop()
 
@@ -200,6 +205,9 @@ class MusicPlayer(commands.Cog):
                 break
             except PermissionError:
                 await asyncio.sleep(1)
+            except FileNotFoundError:
+                self.downloads -= 1
+                break
 
         if song in self.queue[ctx.guild.id]:
             self.queue[ctx.guild.id].remove(song)
