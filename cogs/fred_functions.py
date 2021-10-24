@@ -47,6 +47,26 @@ class FredFunctions(commands.Cog):
 
         return False
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        logs: discord.TextChannel = self.bot.get_channel(901921091705004134)
+        if message.author == self.bot.user:
+            return
+
+        if message.channel != logs and message.guild:
+            embed = discord.Embed(colour=discord.Colour.random(seed=message.guild.id), description=message.content)
+            embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
+            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            await logs.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        errors: discord.TextChannel = self.bot.get_channel(901921500226011146)
+        error = getattr(error, 'original', error)
+        embed = discord.Embed(title="Error", colour=discord.Colour.red(), description=error)
+        await errors.send(embed=embed)
+        await ctx.reply(embed=embed)
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(FredFunctions(bot))

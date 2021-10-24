@@ -40,7 +40,7 @@ if __name__ == "__main__":
     async def on_ready():
         print(f"{bot.user.display_name} is online with a {round(bot.latency * 100, 2)}ms ping\n")
 
-        print("Guilds:")
+        print("Guids:")
         for guild in bot.guilds:
             print(f"> {guild.name} ({len(guild.members)})")
 

@@ -14,13 +14,6 @@ class Personality(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        logs: discord.TextChannel = self.bot.get_channel(847572662343041094)
-        if message.channel != logs and message.guild:
-            embed = discord.Embed(colour=discord.Colour.random(seed=message.guild.id), description=message.content)
-            embed.set_author(name=message.author.display_name, icon_url=message.author.avatar_url)
-            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
-            await logs.send(embed=embed)
-
         if message.author == self.bot.user:
             return
 
