@@ -1,5 +1,3 @@
-import string
-
 import discord
 from discord.ext import commands
 from cogs.fred_functions import FredFunctions
