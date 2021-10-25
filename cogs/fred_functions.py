@@ -64,8 +64,10 @@ class FredFunctions(commands.Cog):
         errors: discord.TextChannel = self.bot.get_channel(901921500226011146)
         error = getattr(error, 'original', error)
         embed = discord.Embed(title="Error", colour=discord.Colour.red(), description=error)
+
         await errors.send(embed=embed)
         await ctx.reply(embed=embed)
+        raise error
 
 
 def setup(bot: commands.Bot):
