@@ -23,7 +23,8 @@ class Jenny(commands.Cog):
                     print(f"> Unloaded {cog}")
                     
             print("\nUnloading...")
-            shell = await asyncio.create_subprocess_shell("git reset --hard && git pull")
+            shell = await asyncio.create_subprocess_shell("git reset --hard && "
+                                                          "git pull && pip install -r requirements.txt")
 
             await shell.wait()
 
